@@ -13,8 +13,24 @@ function renderItem(item) {
   const name = item.name ?? item.Name ?? "";
   const description = item.description ?? item.Description ?? "";
   const heading = document.createElement("h3");
+  const editButton = document.createElement("button");
+  const icon = document.createElement("img");
+  icon.src = "./icons/edit-icon.png";
+  icon.alt = "";
+  icon.width = 16;
+  icon.height = 16;
+
+  editButton.appendChild(icon);
+  editButton.setAttribute("aria-label", "Editar tarefa");
+  editButton.title = "Editar tarefa";
+  editButton.classList.add("edit-button");
+  editButton.addEventListener("click", () => {
+    startEdition(item)
+  })
+
   heading.textContent = name;
   li.appendChild(heading);
+  li.appendChild(editButton);
   if (description) {
     const details = document.createElement("p");
     details.textContent = description;
@@ -23,6 +39,16 @@ function renderItem(item) {
   list.appendChild(li);
   const total = list.children.length;
   count.textContent = `${total} ${total === 1 ? "tarefa" : "tarefas"}`;
+}
+
+let taskInEditionId = null;
+
+function startEdition(task){
+  taskInEditionId = task.id ?? task.id;
+  input.value = task.name ?? task.name ?? "";
+  descriptionInput.value = task.description ?? task.description ?? "";
+  button.textContent = "Salvar alterações";
+  input.focus();
 }
 
 async function loadItems() {
@@ -52,43 +78,37 @@ async function loadItems() {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const name = input.value.trim();
-  const description = descriptionInput.value.trim();
+  const isEditingTask = taskInEditionId != null;
 
-  if (!name) {
-    status.textContent = "Digite o nome da tarefa.";
-    return;
-  }
+  const data = {
+    Name: input.value.trim(),
+    Description: descriptionInput.value.trim()
+  };
 
-  button.disabled = true;
-  button.textContent = "Salvando...";
-  status.textContent = "Salvando tarefa...";
+  const url = isEditingTask
+      ? `${API_BASE_URL}/items/${taskInEditionId}`
+      : `${API_BASE_URL}/items`;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/items`, {
-      method: "POST",
+    const response = await fetch(url, {
+      method: isEditingTask ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ Name: name, Description: description }),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error(`Erro ao criar tarefa: HTTP ${response.status}`);
+      throw new Error("Não foi possível salvar a tarefa.");
     }
 
-    const createdItem = await response.json();
-
-    renderItem(createdItem);
+    taskInEditionId = null;
     form.reset();
-    input.focus();
-    status.textContent = "Tarefa criada.";
+    button.textContent = "Adicionar tarefa";
+
+    await loadItems();
   } catch (error) {
-    status.textContent = "Não foi possível salvar a tarefa. Tente novamente.";
-    console.error(error);
-  } finally {
-    button.disabled = false;
-    button.textContent = "Adicionar tarefa +";
+    alert(error.message);
   }
 });
 

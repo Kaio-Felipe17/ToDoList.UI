@@ -8,12 +8,14 @@ const count = document.querySelector("#item-count");
 const status = document.querySelector("#status");
 const button = form.querySelector("button");
 
-function renderItem(item) {
+async function renderItem(item) {
   const li = document.createElement("li");
   const name = item.name ?? item.Name ?? "";
   const description = item.description ?? item.Description ?? "";
   const heading = document.createElement("h3");
   const editButton = document.createElement("button");
+  const deleteButton = document.createElement("button");
+
   const icon = document.createElement("img");
   icon.src = "./icons/edit-icon.png";
   icon.alt = "";
@@ -23,14 +25,31 @@ function renderItem(item) {
   editButton.appendChild(icon);
   editButton.setAttribute("aria-label", "Editar tarefa");
   editButton.title = "Editar tarefa";
+  editButton.type = "button";
   editButton.classList.add("edit-button");
   editButton.addEventListener("click", () => {
     startEdition(item)
   })
 
+  const deleteIcon = document.createElement("img");
+  deleteIcon.src = "./icons/delete-icon.png";
+  deleteIcon.alt = "";
+  deleteIcon.width = 16;
+  deleteIcon.height = 16;
+
+  deleteButton.appendChild(deleteIcon)
+  deleteButton.setAttribute("aria-label", "Excluir tarefa");
+  deleteButton.title = "Excluir tarefa";
+  deleteButton.type = "button";
+  deleteButton.classList.add("delete-button");
+  deleteButton.addEventListener("click", async () => {
+    await startDelete(item)
+  })
+
   heading.textContent = name;
   li.appendChild(heading);
   li.appendChild(editButton);
+  li.appendChild(deleteButton);
   if (description) {
     const details = document.createElement("p");
     details.textContent = description;
@@ -49,6 +68,25 @@ function startEdition(task){
   descriptionInput.value = task.description ?? task.description ?? "";
   button.textContent = "Salvar alterações";
   input.focus();
+}
+
+async function startDelete(task){
+  const taskToDeleteId = task.id ?? task.Id;
+  const url = `${API_BASE_URL}/items/${taskToDeleteId}`
+
+  try {
+    const response = await fetch(url, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) {
+      throw new Error("Não foi possível excluir a tarefa.");
+    }
+
+    await loadItems();
+  } catch (error){
+    console.error(error);
+  }
 }
 
 async function loadItems() {

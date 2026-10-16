@@ -55,7 +55,7 @@ button:disabled { opacity: 0.65; cursor: wait; }
 .edit-button {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 30px;
 
   display: inline-flex;
   align-items: center;
@@ -77,6 +77,35 @@ button:disabled { opacity: 0.65; cursor: wait; }
 }
 
 .edit-button:focus-visible {
+  outline: 2px solid #64748b;
+  outline-offset: 3px;
+}
+
+.delete-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  color: #334155;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: none;
+}
+
+.delete-button:focus-visible {
   outline: 2px solid #64748b;
   outline-offset: 3px;
 }
